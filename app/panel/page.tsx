@@ -7,6 +7,7 @@ import type { Puesto } from "@/lib/types";
 import {
   createInterest,
   dismissOffer,
+  withdrawInterest,
 } from "./actions";
 
 type Profile = {
@@ -52,45 +53,37 @@ export default async function PanelPage() {
     redirect("/login");
   }
 
-  const [
-    { data: profile },
-    { data: puestos },
-  ] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select(
-        "full_name, preferred_districts"
-      )
-      .eq("id", user.id)
-      .single(),
+  const [{ data: profile }, { data: puestos }] =
+    await Promise.all([
+      supabase
+        .from("profiles")
+        .select("full_name, preferred_districts")
+        .eq("id", user.id)
+        .single(),
 
-    supabase
-      .from("puestos")
-      .select(
-        "id, description, pid, school, district, schedule, status, created_at"
-      )
-      .eq("user_id", user.id)
-      .order("created_at", {
-        ascending: false,
-      }),
-  ]);
+      supabase
+        .from("puestos")
+        .select(
+          "id, description, pid, school, district, schedule, status, created_at"
+        )
+        .eq("user_id", user.id)
+        .order("created_at", {
+          ascending: false,
+        }),
+    ]);
 
   const safeProfile = (
     profile ?? {
-      full_name:
-        user.email ?? "Docente",
+      full_name: user.email ?? "Docente",
       preferred_districts: [],
     }
   ) as Profile;
 
-  const myPuestos =
-    (puestos ?? []) as Puesto[];
+  const myPuestos = (puestos ?? []) as Puesto[];
 
   const pids = [
     ...new Set(
-      myPuestos.map(
-        (puesto) => puesto.pid
-      )
+      myPuestos.map((puesto) => puesto.pid)
     ),
   ];
 
@@ -117,21 +110,17 @@ export default async function PanelPage() {
     )[];
   }
 
-  const { data: interests } =
-    await supabase
-      .from("interests")
-      .select(
-        "target_post_id, offered_post_id, status"
-      )
-      .eq(
-        "requester_user_id",
-        user.id
-      )
-      .eq("status", "active");
+  const { data: interests } = await supabase
+    .from("interests")
+    .select(
+      "target_post_id, offered_post_id, status"
+    )
+    .eq("requester_user_id", user.id)
+    .eq("status", "active");
 
-  const activeInterests =
-    (interests ??
-      []) as InterestSummary[];
+  const activeInterests = (
+    interests ?? []
+  ) as InterestSummary[];
 
   const { data: dismissedOffers } =
     await supabase
@@ -153,9 +142,7 @@ export default async function PanelPage() {
   const {
     data: matchesData,
     error: matchesError,
-  } = await supabase.rpc(
-    "get_my_matches"
-  );
+  } = await supabase.rpc("get_my_matches");
 
   if (matchesError) {
     console.error(
@@ -164,63 +151,49 @@ export default async function PanelPage() {
     );
   }
 
-  const matches =
-    (matchesData ??
-      []) as MatchRecord[];
+  const matches = (
+    matchesData ?? []
+  ) as MatchRecord[];
 
   const preferred =
-    safeProfile.preferred_districts ??
-    [];
+    safeProfile.preferred_districts ?? [];
 
   const preferredOffers =
     visibleOffers.filter((item) =>
-      preferred.includes(
-        item.district
-      )
+      preferred.includes(item.district)
     );
 
   const otherOffers =
     visibleOffers.filter(
       (item) =>
-        !preferred.includes(
-          item.district
-        )
+        !preferred.includes(item.district)
     );
 
   return (
     <>
       <PanelHeader
-        fullName={
-          safeProfile.full_name
-        }
+        fullName={safeProfile.full_name}
       />
 
       <main className="shell panel-grid">
         <aside className="sidebar">
           <section className="card">
-            <h3>
-              Tu perfil de búsqueda
-            </h3>
+            <h3>Tu perfil de búsqueda</h3>
 
             <PreferredDistrictsForm
-              initialDistricts={
-                preferred
-              }
+              initialDistricts={preferred}
             />
           </section>
 
           <section className="card">
-            <h3>
-              Cómo se ordenan
-            </h3>
+            <h3>Cómo se ordenan</h3>
 
             <p className="help">
               La app busca todos los
-              ofrecimientos con tus
-              mismos PID. Primero
-              muestra los distritos
-              preferidos y luego el
-              resto.
+              ofrecimientos con tus mismos
+              PID. Primero muestra los
+              distritos preferidos y luego
+              el resto.
             </p>
           </section>
         </aside>
@@ -238,9 +211,7 @@ export default async function PanelPage() {
             <div className="stat-row">
               <div className="stat">
                 <strong>
-                  {
-                    myPuestos.length
-                  }
+                  {myPuestos.length}
                 </strong>
 
                 <span>
@@ -250,27 +221,21 @@ export default async function PanelPage() {
 
               <div className="stat">
                 <strong>
-                  {
-                    visibleOffers.length
-                  }
+                  {visibleOffers.length}
                 </strong>
 
                 <span>
-                  Ofrecimientos con
-                  tus PID
+                  Ofrecimientos con tus PID
                 </span>
               </div>
 
               <div className="stat">
                 <strong>
-                  {
-                    preferredOffers.length
-                  }
+                  {preferredOffers.length}
                 </strong>
 
                 <span>
-                  En distritos
-                  preferidos
+                  En distritos preferidos
                 </span>
               </div>
 
@@ -289,41 +254,31 @@ export default async function PanelPage() {
           />
 
           <PuestoManager
-            initialPuestos={
-              myPuestos
-            }
+            initialPuestos={myPuestos}
           />
 
           <section className="card">
-            <h2>
-              Posibles permutas
-            </h2>
+            <h2>Posibles permutas</h2>
 
             {pids.length === 0 ? (
               <div className="empty">
-                Cargá al menos un
-                puesto para empezar a
-                buscar ofrecimientos
-                por PID.
+                Cargá al menos un puesto
+                para empezar a buscar
+                ofrecimientos por PID.
               </div>
             ) : visibleOffers.length ===
               0 ? (
               <div className="empty">
-                No quedan
-                ofrecimientos visibles
-                con los códigos PID que
-                cargaste.
+                No quedan ofrecimientos
+                visibles con los códigos
+                PID que cargaste.
               </div>
             ) : (
               <>
                 <OfferSection
                   title="En tus distritos preferidos"
-                  offers={
-                    preferredOffers
-                  }
-                  myPuestos={
-                    myPuestos
-                  }
+                  offers={preferredOffers}
+                  myPuestos={myPuestos}
                   activeInterests={
                     activeInterests
                   }
@@ -332,12 +287,8 @@ export default async function PanelPage() {
 
                 <OfferSection
                   title="Otras posibilidades"
-                  offers={
-                    otherOffers
-                  }
-                  myPuestos={
-                    myPuestos
-                  }
+                  offers={otherOffers}
+                  myPuestos={myPuestos}
                   activeInterests={
                     activeInterests
                   }
@@ -363,15 +314,12 @@ function MatchSection({
           Matches
         </span>
 
-        <h2>
-          Tus coincidencias
-        </h2>
+        <h2>Tus coincidencias</h2>
 
         <div className="empty">
-          Todavía no tenés matches.
-          Los datos de contacto se
-          compartirán cuando ambos
-          docentes manifiesten
+          Todavía no tenés matches. Los
+          datos de contacto se compartirán
+          cuando ambos docentes manifiesten
           interés.
         </div>
       </section>
@@ -389,10 +337,10 @@ function MatchSection({
       </h2>
 
       <p className="help">
-        Ambos docentes eligieron
-        avanzar. Ya pueden
-        comunicarse para conversar
-        sobre la posible permuta.
+        Ambos docentes eligieron avanzar.
+        Ya pueden comunicarse para
+        conversar sobre la posible
+        permuta.
       </p>
 
       <div
@@ -412,37 +360,26 @@ function MatchSection({
 
                 <h3
                   className="job-title"
-                  style={{
-                    marginTop: 10,
-                  }}
+                  style={{ marginTop: 10 }}
                 >
-                  {
-                    match.other_full_name
-                  }
+                  {match.other_full_name}
                 </h3>
 
                 <p className="job-sub">
-                  Match por el código
-                  PID{" "}
-                  {
-                    match.other_pid
-                  }
+                  Match por el código PID{" "}
+                  {match.other_pid}
                 </p>
               </div>
             </div>
 
             <div
-              style={{
-                marginTop: 18,
-              }}
+              style={{ marginTop: 18 }}
             >
               <h3>Vos ofrecés</h3>
 
               <p>
                 <strong>
-                  {
-                    match.my_description
-                  }
+                  {match.my_description}
                 </strong>
               </p>
 
@@ -452,9 +389,7 @@ function MatchSection({
               </p>
 
               <div
-                style={{
-                  marginTop: 8,
-                }}
+                style={{ marginTop: 8 }}
               >
                 {match.my_schedule.map(
                   (item, index) => (
@@ -463,8 +398,7 @@ function MatchSection({
                       key={`my-${match.my_post_id}-${index}`}
                     >
                       {item.day}:{" "}
-                      {item.from}–
-                      {item.to}
+                      {item.from}–{item.to}
                     </span>
                   )
                 )}
@@ -472,34 +406,23 @@ function MatchSection({
             </div>
 
             <div
-              style={{
-                marginTop: 18,
-              }}
+              style={{ marginTop: 18 }}
             >
               <h3>Recibirías</h3>
 
               <p>
                 <strong>
-                  {
-                    match.other_description
-                  }
+                  {match.other_description}
                 </strong>
               </p>
 
               <p className="job-sub">
-                {
-                  match.other_school
-                }{" "}
-                ·{" "}
-                {
-                  match.other_district
-                }
+                {match.other_school} ·{" "}
+                {match.other_district}
               </p>
 
               <div
-                style={{
-                  marginTop: 8,
-                }}
+                style={{ marginTop: 8 }}
               >
                 {match.other_schedule.map(
                   (item, index) => (
@@ -508,8 +431,7 @@ function MatchSection({
                       key={`other-${match.other_post_id}-${index}`}
                     >
                       {item.day}:{" "}
-                      {item.from}–
-                      {item.to}
+                      {item.from}–{item.to}
                     </span>
                   )
                 )}
@@ -517,37 +439,27 @@ function MatchSection({
             </div>
 
             <div
-              style={{
-                marginTop: 20,
-              }}
+              style={{ marginTop: 20 }}
             >
               <h3>
                 Datos de contacto
               </h3>
 
               <p>
-                <strong>
-                  Celular:
-                </strong>{" "}
+                <strong>Celular:</strong>{" "}
                 <a
                   href={`tel:${match.other_phone}`}
                 >
-                  {
-                    match.other_phone
-                  }
+                  {match.other_phone}
                 </a>
               </p>
 
               <p>
-                <strong>
-                  Correo:
-                </strong>{" "}
+                <strong>Correo:</strong>{" "}
                 <a
                   href={`mailto:${match.other_email}`}
                 >
-                  {
-                    match.other_email
-                  }
+                  {match.other_email}
                 </a>
               </p>
             </div>
@@ -600,8 +512,7 @@ function OfferSection({
           const compatibleOwnPosts =
             myPuestos.filter(
               (puesto) =>
-                puesto.pid ===
-                  offer.pid &&
+                puesto.pid === offer.pid &&
                 puesto.status ===
                   "published"
             );
@@ -621,9 +532,7 @@ function OfferSection({
               <div className="job-item-top">
                 <div>
                   <h3 className="job-title">
-                    {
-                      offer.description
-                    }
+                    {offer.description}
                   </h3>
 
                   <p className="job-sub">
@@ -641,9 +550,7 @@ function OfferSection({
               </div>
 
               <div
-                style={{
-                  marginTop: 12,
-                }}
+                style={{ marginTop: 12 }}
               >
                 {offer.schedule.map(
                   (item, index) => (
@@ -652,112 +559,131 @@ function OfferSection({
                       key={`${offer.id}-${index}`}
                     >
                       {item.day}:{" "}
-                      {item.from}–
-                      {item.to}
+                      {item.from}–{item.to}
                     </span>
                   )
                 )}
               </div>
 
               <div className="hero-actions">
-                <form
-                  action={
-                    dismissOffer
-                  }
-                >
-                  <input
-                    type="hidden"
-                    name="target_post_id"
-                    value={offer.id}
-                  />
-
-                  <button
-                    className="btn btn-ghost"
-                    type="submit"
-                  >
-                    No me sirve
-                  </button>
-                </form>
-
                 {existingInterest ? (
-                  <span className="badge badge-preferred">
-                    Interés enviado
-                  </span>
-                ) : (
-                  <form
-                    action={
-                      createInterest
-                    }
-                  >
-                    <input
-                      type="hidden"
-                      name="target_post_id"
-                      value={offer.id}
-                    />
+                  <>
+                    <span className="badge badge-preferred">
+                      Interés enviado
+                    </span>
 
-                    {compatibleOwnPosts.length ===
-                    1 ? (
+                    <form
+                      action={
+                        withdrawInterest
+                      }
+                    >
+                      <input
+                        type="hidden"
+                        name="target_post_id"
+                        value={
+                          existingInterest.target_post_id
+                        }
+                      />
+
                       <input
                         type="hidden"
                         name="offered_post_id"
                         value={
-                          compatibleOwnPosts[0]
-                            .id
+                          existingInterest.offered_post_id
                         }
                       />
-                    ) : compatibleOwnPosts.length >
-                      1 ? (
-                      <label>
-                        <span className="help">
-                          Elegí cuál de
-                          tus puestos
-                          ofrecés
-                        </span>
 
-                        <select
-                          name="offered_post_id"
-                          required
-                        >
-                          <option value="">
-                            Seleccionar
-                            puesto
-                          </option>
-
-                          {compatibleOwnPosts.map(
-                            (puesto) => (
-                              <option
-                                key={
-                                  puesto.id
-                                }
-                                value={
-                                  puesto.id
-                                }
-                              >
-                                {
-                                  puesto.description
-                                }{" "}
-                                ·{" "}
-                                {
-                                  puesto.school
-                                }
-                              </option>
-                            )
-                          )}
-                        </select>
-                      </label>
-                    ) : null}
-
-                    <button
-                      className="btn btn-accent"
-                      type="submit"
-                      disabled={
-                        compatibleOwnPosts.length ===
-                        0
-                      }
+                      <button
+                        className="btn btn-ghost"
+                        type="submit"
+                      >
+                        Retirar interés
+                      </button>
+                    </form>
+                  </>
+                ) : (
+                  <>
+                    <form
+                      action={dismissOffer}
                     >
-                      Me interesa
-                    </button>
-                  </form>
+                      <input
+                        type="hidden"
+                        name="target_post_id"
+                        value={offer.id}
+                      />
+
+                      <button
+                        className="btn btn-ghost"
+                        type="submit"
+                      >
+                        No me sirve
+                      </button>
+                    </form>
+
+                    <form
+                      action={createInterest}
+                    >
+                      <input
+                        type="hidden"
+                        name="target_post_id"
+                        value={offer.id}
+                      />
+
+                      {compatibleOwnPosts.length ===
+                      1 ? (
+                        <input
+                          type="hidden"
+                          name="offered_post_id"
+                          value={
+                            compatibleOwnPosts[0]
+                              .id
+                          }
+                        />
+                      ) : compatibleOwnPosts.length >
+                        1 ? (
+                        <label>
+                          <span className="help">
+                            Elegí cuál de tus
+                            puestos ofrecés
+                          </span>
+
+                          <select
+                            name="offered_post_id"
+                            required
+                          >
+                            <option value="">
+                              Seleccionar puesto
+                            </option>
+
+                            {compatibleOwnPosts.map(
+                              (puesto) => (
+                                <option
+                                  key={puesto.id}
+                                  value={puesto.id}
+                                >
+                                  {
+                                    puesto.description
+                                  }{" "}
+                                  · {puesto.school}
+                                </option>
+                              )
+                            )}
+                          </select>
+                        </label>
+                      ) : null}
+
+                      <button
+                        className="btn btn-accent"
+                        type="submit"
+                        disabled={
+                          compatibleOwnPosts.length ===
+                          0
+                        }
+                      >
+                        Me interesa
+                      </button>
+                    </form>
+                  </>
                 )}
               </div>
 
@@ -765,9 +691,8 @@ function OfferSection({
               0 ? (
                 <p className="help">
                   No tenés un puesto
-                  publicado disponible
-                  para ofrecer con este
-                  PID.
+                  publicado disponible para
+                  ofrecer con este PID.
                 </p>
               ) : null}
             </article>
