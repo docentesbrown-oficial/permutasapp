@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Vista previa — Permutas Docentes Brown</title>
+  <style>
+    :root{--azul:#24496e;--crema:#f3efdc;--coral:#da6863;--blanco:#fffdf8;--texto:#1e2a36;--gris:#65717d;--borde:#d9d3c2;--verde:#2f7d5a;--sombra:0 18px 50px rgba(36,73,110,.12)}
+    *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--texto);background:radial-gradient(circle at top right,rgba(218,104,99,.18),transparent 25rem),linear-gradient(180deg,#fffdf8,var(--crema));min-height:100vh}
+    button,input,select{font:inherit}.shell{width:min(1120px,calc(100% - 30px));margin:auto}.top{display:flex;justify-content:space-between;align-items:center;padding:20px 0}.brand{font-weight:900;font-size:1.35rem;color:var(--azul);letter-spacing:-.04em}.brand small{display:block;color:var(--coral);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase}.nav{display:flex;gap:8px;flex-wrap:wrap}.btn{border:0;border-radius:999px;padding:11px 16px;font-weight:800;cursor:pointer}.primary{background:var(--azul);color:white}.accent{background:var(--coral);color:white}.ghost{background:transparent;color:var(--azul);border:1px solid rgba(36,73,110,.25)}
+    .view{display:none}.view.active{display:block}.hero{display:grid;grid-template-columns:1.12fr .88fr;gap:40px;align-items:center;padding:70px 0}.eyebrow{display:inline-block;background:rgba(218,104,99,.13);color:#95413d;border-radius:999px;padding:8px 12px;font-weight:900}.hero h1{font-size:clamp(2.7rem,6vw,5.4rem);line-height:.95;letter-spacing:-.06em;color:var(--azul);margin:20px 0}.lead{font-size:1.15rem;color:var(--gris);line-height:1.6}.card{background:rgba(255,253,248,.96);border:1px solid rgba(36,73,110,.12);border-radius:26px;box-shadow:var(--sombra);padding:24px}.offer{border:1px solid var(--borde);background:white;border-radius:20px;overflow:hidden}.offer-head{background:var(--azul);color:#fff;padding:20px}.offer-head strong{display:block;font-size:1.3rem;margin-top:10px}.badge{display:inline-block;border-radius:999px;padding:7px 10px;font-size:.78rem;font-weight:900;background:#e5f5ed;color:var(--verde)}.meta{padding:18px}.row{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px dashed var(--borde)}.row span{color:var(--gris)}
+    .auth{min-height:calc(100vh - 90px);display:grid;place-items:center;padding:30px 0}.auth .card{width:min(520px,100%)}h2,h3{color:var(--azul)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:grid;gap:6px}.full{grid-column:1/-1}label{font-weight:800;color:var(--azul)}input,select{width:100%;padding:13px;border-radius:13px;border:1px solid var(--borde);background:white}.help{font-size:.86rem;color:var(--gris);line-height:1.45}
+    .panel{display:grid;grid-template-columns:320px 1fr;gap:22px;padding:28px 0 70px}.stack{display:grid;gap:18px;align-content:start}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.stat{background:white;border:1px solid var(--borde);border-radius:17px;padding:15px}.stat strong{display:block;font-size:1.7rem;color:var(--azul)}.multi{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:210px;overflow:auto;padding:10px;border:1px solid var(--borde);border-radius:13px;background:white}.check{font-size:.88rem}.check input{width:auto}.job{border:1px solid var(--borde);background:white;border-radius:18px;padding:18px;margin-top:12px}.jobtop{display:flex;justify-content:space-between;gap:12px}.chip{display:inline-block;background:var(--crema);border-radius:999px;padding:7px 10px;font-size:.84rem;margin:8px 5px 0 0}.section-title{display:flex;justify-content:space-between;align-items:center;gap:12px}.demo-note{position:fixed;bottom:12px;right:12px;background:#1e2a36;color:white;padding:9px 12px;border-radius:999px;font-size:.78rem;box-shadow:var(--sombra)}
+    @media(max-width:820px){.hero,.panel{grid-template-columns:1fr}.stats{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.full{grid-column:auto}}
+  </style>
+</head>
+<body>
+  <header class="shell top">
+    <div class="brand">Permutas Docentes<small>Docentes Brown</small></div>
+    <nav class="nav">
+      <button class="btn ghost" data-go="home">Inicio</button>
+      <button class="btn ghost" data-go="login">Login</button>
+      <button class="btn primary" data-go="register">Registro</button>
+      <button class="btn accent" data-go="panel">Panel</button>
+    </nav>
+  </header>
+
+  <main id="home" class="view active shell hero">
+    <section>
+      <span class="eyebrow">Permutas titulares por código PID</span>
+      <h1>Tu próximo destino puede estar buscando el tuyo.</h1>
+      <p class="lead">Publicá tu cargo, módulos u horas cátedra titulares. La app encuentra otros ofrecimientos con el mismo PID y prioriza los distritos que elegiste.</p>
+      <div class="nav"><button class="btn accent" data-go="register">Crear mi cuenta</button><button class="btn ghost" data-go="login">Ya tengo cuenta</button></div>
+    </section>
+    <aside class="card">
+      <div class="offer"><div class="offer-head"><span class="badge">Distrito preferido</span><strong>4 módulos titulares de Física</strong></div><div class="meta"><div class="row"><span>PID</span><b>123456</b></div><div class="row"><span>Escuela</span><b>EES N.º 25</b></div><div class="row"><span>Distrito</span><b>Lomas de Zamora</b></div><div class="row"><span>Días</span><b>Martes y jueves</b></div><div class="row"><span>Horario</span><b>08:00 a 10:00</b></div><div class="nav" style="margin-top:16px"><button class="btn ghost">No me sirve</button><button class="btn accent">Me interesa</button></div></div></div>
+    </aside>
+  </main>
+
+  <main id="register" class="view shell auth">
+    <section class="card"><span class="eyebrow">Cuenta docente verificada</span><h2>Crear una cuenta</h2><p class="lead" style="font-size:1rem">Solo podrán registrarse personas con correo institucional @abc.gob.ar.</p><div class="grid"><div class="field full"><label>Nombre y apellido</label><input placeholder="Laura Fernández"></div><div class="field full"><label>Celular</label><input placeholder="11 4049 2855"></div><div class="field full"><label>Correo institucional</label><input placeholder="nombre@abc.gob.ar"><div class="help">La cuenta deberá confirmarse desde el correo.</div></div><div class="field"><label>Contraseña</label><input type="password" value="12345678"></div><div class="field"><label>Repetir contraseña</label><input type="password" value="12345678"></div></div><button class="btn primary" style="width:100%;margin-top:18px" data-go="panel">Crear cuenta</button></section>
+  </main>
+
+  <main id="login" class="view shell auth">
+    <section class="card"><span class="eyebrow">Acceso exclusivo</span><h2>Ingresar</h2><p class="lead" style="font-size:1rem">Accedé a tus puestos y coincidencias por PID.</p><div class="grid"><div class="field full"><label>Correo institucional</label><input placeholder="nombre@abc.gob.ar"></div><div class="field full"><label>Contraseña</label><input type="password" value="12345678"></div></div><button class="btn primary" style="width:100%;margin-top:18px" data-go="panel">Ingresar</button></section>
+  </main>
+
+  <main id="panel" class="view shell panel">
+    <aside class="stack"><section class="card"><h3>Distritos preferidos</h3><input placeholder="Buscar distrito"><p class="help">Las coincidencias de estos distritos aparecen primero.</p><div class="multi"><label class="check"><input type="checkbox" checked> Lomas de Zamora</label><label class="check"><input type="checkbox" checked> Lanús</label><label class="check"><input type="checkbox"> Avellaneda</label><label class="check"><input type="checkbox"> Quilmes</label><label class="check"><input type="checkbox"> Almirante Brown</label><label class="check"><input type="checkbox"> Esteban Echeverría</label></div><button class="btn primary" style="width:100%;margin-top:12px">Guardar</button></section><section class="card"><h3>Regla de búsqueda</h3><p class="help">Se muestran todos los ofrecimientos con tus mismos códigos PID. Primero los distritos preferidos y luego los demás.</p></section></aside>
+    <section class="stack"><section class="card"><span class="eyebrow">Panel inicial</span><h2>Tu espacio de permutas</h2><div class="stats"><div class="stat"><strong>2</strong>Puestos cargados</div><div class="stat"><strong>5</strong>Ofrecimientos con tus PID</div><div class="stat"><strong>3</strong>En distritos preferidos</div></div></section>
+      <section class="card"><div class="section-title"><div><h2>Mis puestos</h2><p class="help">Podés agregar, modificar o eliminar.</p></div><button class="btn accent">+ Agregar</button></div><article class="job"><div class="jobtop"><div><h3 style="margin:0">4 módulos titulares de Física</h3><p class="help">PID 123456 · EES N.º 18 · Almirante Brown</p></div><span class="badge">Publicado</span></div><span class="chip">Martes 08:00–10:00</span><span class="chip">Jueves 10:00–12:00</span><div class="nav" style="margin-top:12px"><button class="btn ghost">Modificar</button><button class="btn ghost">Eliminar</button></div></article></section>
+      <section class="card"><h2>En tus distritos preferidos</h2><article class="job"><div class="jobtop"><div><h3 style="margin:0">4 módulos titulares de Física</h3><p class="help">PID 123456 · EES N.º 25 · Lomas de Zamora</p></div><span class="badge">Preferido</span></div><span class="chip">Lunes 08:00–10:00</span><span class="chip">Miércoles 10:00–12:00</span><div class="nav" style="margin-top:12px"><button class="btn ghost">No me sirve</button><button class="btn accent">Me interesa</button></div></article><h2 style="margin-top:28px">Otras posibilidades</h2><article class="job"><div class="jobtop"><div><h3 style="margin:0">4 módulos titulares de Física</h3><p class="help">PID 123456 · EES N.º 7 · Quilmes</p></div></div><span class="chip">Viernes 13:00–17:00</span><div class="nav" style="margin-top:12px"><button class="btn ghost">No me sirve</button><button class="btn accent">Me interesa</button></div></article></section>
+    </section>
+  </main>
+
+  <div class="demo-note">Demo visual · sin conexión a base de datos</div>
+  <script>
+    const views=[...document.querySelectorAll('.view')];
+    document.querySelectorAll('[data-go]').forEach(btn=>btn.addEventListener('click',()=>{views.forEach(v=>v.classList.remove('active'));document.getElementById(btn.dataset.go).classList.add('active');window.scrollTo({top:0,behavior:'smooth'})}));
+  </script>
+</body>
+</html>
