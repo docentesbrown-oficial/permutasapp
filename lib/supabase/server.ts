@@ -1,4 +1,8 @@
-import { createServerClient } from "@supabase/ssr";
+import {
+  createServerClient,
+  type CookieOptions,
+} from "@supabase/ssr";
+
 import { cookies } from "next/headers";
 
 export function createSupabaseServerClient() {
@@ -12,16 +16,33 @@ export function createSupabaseServerClient() {
         get(name: string) {
           return cookieStore.get(name)?.value;
         },
-        set(name: string, value: string, options) {
+
+        set(
+          name: string,
+          value: string,
+          options: CookieOptions
+        ) {
           try {
-            cookieStore.set({ name, value, ...options });
+            cookieStore.set({
+              name,
+              value,
+              ...options,
+            });
           } catch {
             // En Server Components puede no permitirse escribir cookies.
           }
         },
-        remove(name: string, options) {
+
+        remove(
+          name: string,
+          options: CookieOptions
+        ) {
           try {
-            cookieStore.set({ name, value: "", ...options });
+            cookieStore.set({
+              name,
+              value: "",
+              ...options,
+            });
           } catch {
             // En Server Components puede no permitirse escribir cookies.
           }
