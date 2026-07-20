@@ -40,7 +40,54 @@ export async function createInterest(formData: FormData) {
   );
 
   if (error) {
-    console.error("No se pudo guardar el interés:", error.message);
+    console.error(
+      "No se pudo guardar el interés:",
+      error.message
+    );
+
+    return;
+  }
+
+  revalidatePath("/panel");
+}
+
+export async function dismissOffer(formData: FormData) {
+  const supabase = createSupabaseServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const targetPostId = String(
+    formData.get("target_post_id") ?? ""
+  ).trim();
+
+  if (!targetPostId) {
+    return;
+  }
+
+  const { error } = await supabase
+    .from("dismissed_offers")
+    .upsert(
+      {
+        user_id: user.id,
+        target_post_id: targetPostId,
+      },
+      {
+        onConflict: "user_id,target_post_id",
+      }
+    );
+
+  if (error) {
+    console.error(
+      "No se pudo descartar el ofrecimiento:",
+      error.message
+    );
+
     return;
   }
 
