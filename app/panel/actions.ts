@@ -51,6 +51,50 @@ export async function createInterest(formData: FormData) {
   revalidatePath("/panel");
 }
 
+export async function withdrawInterest(formData: FormData) {
+  const supabase = createSupabaseServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const offeredPostId = String(
+    formData.get("offered_post_id") ?? ""
+  ).trim();
+
+  const targetPostId = String(
+    formData.get("target_post_id") ?? ""
+  ).trim();
+
+  if (!offeredPostId || !targetPostId) {
+    return;
+  }
+
+  const { error } = await supabase
+    .from("interests")
+    .update({
+      status: "withdrawn",
+    })
+    .eq("requester_user_id", user.id)
+    .eq("offered_post_id", offeredPostId)
+    .eq("target_post_id", targetPostId);
+
+  if (error) {
+    console.error(
+      "No se pudo retirar el interés:",
+      error.message
+    );
+
+    return;
+  }
+
+  revalidatePath("/panel");
+}
+
 export async function dismissOffer(formData: FormData) {
   const supabase = createSupabaseServerClient();
 
