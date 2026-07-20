@@ -4,6 +4,7 @@ import { PanelHeader } from "@/components/PanelHeader";
 import { PreferredDistrictsForm } from "@/components/PreferredDistrictsForm";
 import { PuestoManager } from "@/components/PuestoManager";
 import { CopyMatchSummaryButton } from "@/components/CopyMatchSummaryButton";
+import { WhatsAppMatchButton } from "@/components/WhatsAppMatchButton";
 import type { Puesto } from "@/lib/types";
 import {
   createInterest,
@@ -44,7 +45,8 @@ type MatchRecord = {
 };
 
 export default async function PanelPage() {
-  const supabase = createSupabaseServerClient();
+  const supabase =
+    createSupabaseServerClient();
 
   const {
     data: { user },
@@ -54,37 +56,45 @@ export default async function PanelPage() {
     redirect("/login");
   }
 
-  const [{ data: profile }, { data: puestos }] =
-    await Promise.all([
-      supabase
-        .from("profiles")
-        .select("full_name, preferred_districts")
-        .eq("id", user.id)
-        .single(),
+  const [
+    { data: profile },
+    { data: puestos },
+  ] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select(
+        "full_name, preferred_districts"
+      )
+      .eq("id", user.id)
+      .single(),
 
-      supabase
-        .from("puestos")
-        .select(
-          "id, description, pid, school, district, schedule, status, created_at"
-        )
-        .eq("user_id", user.id)
-        .order("created_at", {
-          ascending: false,
-        }),
-    ]);
+    supabase
+      .from("puestos")
+      .select(
+        "id, description, pid, school, district, schedule, status, created_at"
+      )
+      .eq("user_id", user.id)
+      .order("created_at", {
+        ascending: false,
+      }),
+  ]);
 
   const safeProfile = (
     profile ?? {
-      full_name: user.email ?? "Docente",
+      full_name:
+        user.email ?? "Docente",
       preferred_districts: [],
     }
   ) as Profile;
 
-  const myPuestos = (puestos ?? []) as Puesto[];
+  const myPuestos =
+    (puestos ?? []) as Puesto[];
 
   const pids = [
     ...new Set(
-      myPuestos.map((puesto) => puesto.pid)
+      myPuestos.map(
+        (puesto) => puesto.pid
+      )
     ),
   ];
 
@@ -111,17 +121,21 @@ export default async function PanelPage() {
     )[];
   }
 
-  const { data: interests } = await supabase
-    .from("interests")
-    .select(
-      "target_post_id, offered_post_id, status"
-    )
-    .eq("requester_user_id", user.id)
-    .eq("status", "active");
+  const { data: interests } =
+    await supabase
+      .from("interests")
+      .select(
+        "target_post_id, offered_post_id, status"
+      )
+      .eq(
+        "requester_user_id",
+        user.id
+      )
+      .eq("status", "active");
 
-  const activeInterests = (
-    interests ?? []
-  ) as InterestSummary[];
+  const activeInterests =
+    (interests ??
+      []) as InterestSummary[];
 
   const { data: dismissedOffers } =
     await supabase
@@ -129,21 +143,28 @@ export default async function PanelPage() {
       .select("target_post_id")
       .eq("user_id", user.id);
 
-  const dismissedOfferIds = new Set(
-    (dismissedOffers ?? []).map(
-      (item) => item.target_post_id
-    )
-  );
+  const dismissedOfferIds =
+    new Set(
+      (dismissedOffers ?? []).map(
+        (item) =>
+          item.target_post_id
+      )
+    );
 
-  const visibleOffers = offered.filter(
-    (item) =>
-      !dismissedOfferIds.has(item.id)
-  );
+  const visibleOffers =
+    offered.filter(
+      (item) =>
+        !dismissedOfferIds.has(
+          item.id
+        )
+    );
 
   const {
     data: matchesData,
     error: matchesError,
-  } = await supabase.rpc("get_my_matches");
+  } = await supabase.rpc(
+    "get_my_matches"
+  );
 
   if (matchesError) {
     console.error(
@@ -152,49 +173,63 @@ export default async function PanelPage() {
     );
   }
 
-  const matches = (
-    matchesData ?? []
-  ) as MatchRecord[];
+  const matches =
+    (matchesData ??
+      []) as MatchRecord[];
 
   const preferred =
-    safeProfile.preferred_districts ?? [];
+    safeProfile.preferred_districts ??
+    [];
 
   const preferredOffers =
     visibleOffers.filter((item) =>
-      preferred.includes(item.district)
+      preferred.includes(
+        item.district
+      )
     );
 
   const otherOffers =
     visibleOffers.filter(
       (item) =>
-        !preferred.includes(item.district)
+        !preferred.includes(
+          item.district
+        )
     );
 
   return (
     <>
       <PanelHeader
-        fullName={safeProfile.full_name}
+        fullName={
+          safeProfile.full_name
+        }
       />
 
       <main className="shell panel-grid">
         <aside className="sidebar">
           <section className="card">
-            <h3>Tu perfil de búsqueda</h3>
+            <h3>
+              Tu perfil de búsqueda
+            </h3>
 
             <PreferredDistrictsForm
-              initialDistricts={preferred}
+              initialDistricts={
+                preferred
+              }
             />
           </section>
 
           <section className="card">
-            <h3>Cómo se ordenan</h3>
+            <h3>
+              Cómo se ordenan
+            </h3>
 
             <p className="help">
               La app busca todos los
-              ofrecimientos con tus mismos
-              PID. Primero muestra los
-              distritos preferidos y luego
-              el resto.
+              ofrecimientos con tus
+              mismos PID. Primero
+              muestra los distritos
+              preferidos y luego el
+              resto.
             </p>
           </section>
         </aside>
@@ -212,7 +247,9 @@ export default async function PanelPage() {
             <div className="stat-row">
               <div className="stat">
                 <strong>
-                  {myPuestos.length}
+                  {
+                    myPuestos.length
+                  }
                 </strong>
 
                 <span>
@@ -222,21 +259,27 @@ export default async function PanelPage() {
 
               <div className="stat">
                 <strong>
-                  {visibleOffers.length}
+                  {
+                    visibleOffers.length
+                  }
                 </strong>
 
                 <span>
-                  Ofrecimientos con tus PID
+                  Ofrecimientos con
+                  tus PID
                 </span>
               </div>
 
               <div className="stat">
                 <strong>
-                  {preferredOffers.length}
+                  {
+                    preferredOffers.length
+                  }
                 </strong>
 
                 <span>
-                  En distritos preferidos
+                  En distritos
+                  preferidos
                 </span>
               </div>
 
@@ -245,7 +288,9 @@ export default async function PanelPage() {
                   {matches.length}
                 </strong>
 
-                <span>Matches</span>
+                <span>
+                  Matches
+                </span>
               </div>
             </div>
           </section>
@@ -255,31 +300,41 @@ export default async function PanelPage() {
           />
 
           <PuestoManager
-            initialPuestos={myPuestos}
+            initialPuestos={
+              myPuestos
+            }
           />
 
           <section className="card">
-            <h2>Posibles permutas</h2>
+            <h2>
+              Posibles permutas
+            </h2>
 
             {pids.length === 0 ? (
               <div className="empty">
-                Cargá al menos un puesto
-                para empezar a buscar
-                ofrecimientos por PID.
+                Cargá al menos un
+                puesto para empezar a
+                buscar ofrecimientos
+                por PID.
               </div>
             ) : visibleOffers.length ===
               0 ? (
               <div className="empty">
-                No quedan ofrecimientos
-                visibles con los códigos
-                PID que cargaste.
+                No quedan
+                ofrecimientos visibles
+                con los códigos PID que
+                cargaste.
               </div>
             ) : (
               <>
                 <OfferSection
                   title="En tus distritos preferidos"
-                  offers={preferredOffers}
-                  myPuestos={myPuestos}
+                  offers={
+                    preferredOffers
+                  }
+                  myPuestos={
+                    myPuestos
+                  }
                   activeInterests={
                     activeInterests
                   }
@@ -288,8 +343,12 @@ export default async function PanelPage() {
 
                 <OfferSection
                   title="Otras posibilidades"
-                  offers={otherOffers}
-                  myPuestos={myPuestos}
+                  offers={
+                    otherOffers
+                  }
+                  myPuestos={
+                    myPuestos
+                  }
                   activeInterests={
                     activeInterests
                   }
@@ -326,13 +385,16 @@ function MatchSection({
           Matches
         </span>
 
-        <h2>Tus coincidencias</h2>
+        <h2>
+          Tus coincidencias
+        </h2>
 
         <div className="empty">
-          Todavía no tenés matches. Los
-          datos de contacto se compartirán
-          cuando ambos docentes manifiesten
-          interés.
+          Todavía no tenés
+          matches. El contacto por
+          WhatsApp se habilitará
+          cuando ambos docentes
+          manifiesten interés.
         </div>
       </section>
     );
@@ -349,18 +411,47 @@ function MatchSection({
       </h2>
 
       <p className="help">
-        Ambos docentes eligieron avanzar.
-        Ya pueden comunicarse para
-        conversar sobre la posible
-        permuta.
+        Ambos docentes eligieron
+        avanzar. Ya pueden
+        comunicarse por WhatsApp
+        para conversar sobre la
+        posible permuta.
       </p>
 
       <div
         className="job-list"
-        style={{ marginTop: 20 }}
+        style={{
+          marginTop: 20,
+        }}
       >
         {matches.map((match) => {
           const summary = [
+            "¡Hola! Nos conectamos mediante Permutas Docentes de Docentes Brown.",
+            "",
+            "Tenemos una coincidencia para una posible permuta.",
+            "",
+            `Código PID: ${match.my_pid}`,
+            "",
+            "PUESTO QUE OFREZCO",
+            `Descripción: ${match.my_description}`,
+            `Institución: ${match.my_school}`,
+            `Distrito: ${match.my_district}`,
+            `Días y horarios: ${formatSchedule(
+              match.my_schedule
+            )}`,
+            "",
+            "PUESTO QUE RECIBIRÍA",
+            `Descripción: ${match.other_description}`,
+            `Institución: ${match.other_school}`,
+            `Distrito: ${match.other_district}`,
+            `Días y horarios: ${formatSchedule(
+              match.other_schedule
+            )}`,
+            "",
+            "¿Conversamos sobre la posible permuta?",
+          ].join("\n");
+
+          const copySummary = [
             "RESUMEN DE POSIBLE PERMUTA",
             "Docentes Brown",
             "",
@@ -382,10 +473,9 @@ function MatchSection({
               match.other_schedule
             )}`,
             "",
-            "CONTACTO DEL OTRO DOCENTE",
+            "CONTACTO POR WHATSAPP",
             `Nombre: ${match.other_full_name}`,
-            `Celular: ${match.other_phone}`,
-            `Correo: ${match.other_email}`,
+            `WhatsApp: ${match.other_phone}`,
             "",
             "Este resumen corresponde a una coincidencia generada en la aplicación de Permutas Docentes de Docentes Brown.",
           ].join("\n");
@@ -407,12 +497,17 @@ function MatchSection({
                       marginTop: 10,
                     }}
                   >
-                    {match.other_full_name}
+                    {
+                      match.other_full_name
+                    }
                   </h3>
 
                   <p className="job-sub">
-                    Match por el código PID{" "}
-                    {match.other_pid}
+                    Match por el código
+                    PID{" "}
+                    {
+                      match.other_pid
+                    }
                   </p>
                 </div>
               </div>
@@ -422,11 +517,15 @@ function MatchSection({
                   marginTop: 18,
                 }}
               >
-                <h3>Vos ofrecés</h3>
+                <h3>
+                  Vos ofrecés
+                </h3>
 
                 <p>
                   <strong>
-                    {match.my_description}
+                    {
+                      match.my_description
+                    }
                   </strong>
                 </p>
 
@@ -447,7 +546,8 @@ function MatchSection({
                         key={`my-${match.my_post_id}-${index}`}
                       >
                         {item.day}:{" "}
-                        {item.from}–{item.to}
+                        {item.from}–
+                        {item.to}
                       </span>
                     )
                   )}
@@ -459,17 +559,26 @@ function MatchSection({
                   marginTop: 18,
                 }}
               >
-                <h3>Recibirías</h3>
+                <h3>
+                  Recibirías
+                </h3>
 
                 <p>
                   <strong>
-                    {match.other_description}
+                    {
+                      match.other_description
+                    }
                   </strong>
                 </p>
 
                 <p className="job-sub">
-                  {match.other_school} ·{" "}
-                  {match.other_district}
+                  {
+                    match.other_school
+                  }{" "}
+                  ·{" "}
+                  {
+                    match.other_district
+                  }
                 </p>
 
                 <div
@@ -484,7 +593,8 @@ function MatchSection({
                         key={`other-${match.other_post_id}-${index}`}
                       >
                         {item.day}:{" "}
-                        {item.from}–{item.to}
+                        {item.from}–
+                        {item.to}
                       </span>
                     )
                   )}
@@ -497,49 +607,29 @@ function MatchSection({
                 }}
               >
                 <h3>
-                  Datos de contacto
+                  Contacto por
+                  WhatsApp
                 </h3>
 
                 <p>
-                  <strong>
-                    Celular:
-                  </strong>{" "}
-                  <a
-                    href={`tel:${match.other_phone}`}
-                  >
-                    {match.other_phone}
-                  </a>
-                </p>
-
-                <p>
-                  <strong>
-                    Correo:
-                  </strong>{" "}
-                  <a
-                    href={`mailto:${match.other_email}`}
-                  >
-                    {match.other_email}
-                  </a>
+                  El contacto se
+                  realiza únicamente
+                  mediante WhatsApp.
                 </p>
               </div>
 
               <div className="hero-actions">
-                <a
-                  className="btn btn-ghost"
-                  href={`tel:${match.other_phone}`}
-                >
-                  Llamar
-                </a>
-
-                <a
-                  className="btn btn-ghost"
-                  href={`mailto:${match.other_email}`}
-                >
-                  Enviar correo
-                </a>
+                <WhatsAppMatchButton
+                  phone={
+                    match.other_phone
+                  }
+                  message={summary}
+                />
 
                 <CopyMatchSummaryButton
-                  summary={summary}
+                  summary={
+                    copySummary
+                  }
                 />
               </div>
             </article>
@@ -568,7 +658,11 @@ function OfferSection({
   }
 
   return (
-    <div style={{ marginTop: 24 }}>
+    <div
+      style={{
+        marginTop: 24,
+      }}
+    >
       <h3>{title}</h3>
 
       <div className="job-list">
@@ -576,7 +670,8 @@ function OfferSection({
           const compatibleOwnPosts =
             myPuestos.filter(
               (puesto) =>
-                puesto.pid === offer.pid &&
+                puesto.pid ===
+                  offer.pid &&
                 puesto.status ===
                   "published"
             );
@@ -596,7 +691,9 @@ function OfferSection({
               <div className="job-item-top">
                 <div>
                   <h3 className="job-title">
-                    {offer.description}
+                    {
+                      offer.description
+                    }
                   </h3>
 
                   <p className="job-sub">
@@ -625,7 +722,8 @@ function OfferSection({
                       key={`${offer.id}-${index}`}
                     >
                       {item.day}:{" "}
-                      {item.from}–{item.to}
+                      {item.from}–
+                      {item.to}
                     </span>
                   )
                 )}
@@ -670,7 +768,9 @@ function OfferSection({
                 ) : (
                   <>
                     <form
-                      action={dismissOffer}
+                      action={
+                        dismissOffer
+                      }
                     >
                       <input
                         type="hidden"
@@ -687,7 +787,9 @@ function OfferSection({
                     </form>
 
                     <form
-                      action={createInterest}
+                      action={
+                        createInterest
+                      }
                     >
                       <input
                         type="hidden"
@@ -709,8 +811,9 @@ function OfferSection({
                         1 ? (
                         <label>
                           <span className="help">
-                            Elegí cuál de tus
-                            puestos ofrecés
+                            Elegí cuál de
+                            tus puestos
+                            ofrecés
                           </span>
 
                           <select
@@ -718,19 +821,27 @@ function OfferSection({
                             required
                           >
                             <option value="">
-                              Seleccionar puesto
+                              Seleccionar
+                              puesto
                             </option>
 
                             {compatibleOwnPosts.map(
                               (puesto) => (
                                 <option
-                                  key={puesto.id}
-                                  value={puesto.id}
+                                  key={
+                                    puesto.id
+                                  }
+                                  value={
+                                    puesto.id
+                                  }
                                 >
                                   {
                                     puesto.description
                                   }{" "}
-                                  · {puesto.school}
+                                  ·{" "}
+                                  {
+                                    puesto.school
+                                  }
                                 </option>
                               )
                             )}
@@ -757,8 +868,9 @@ function OfferSection({
               0 ? (
                 <p className="help">
                   No tenés un puesto
-                  publicado disponible para
-                  ofrecer con este PID.
+                  publicado disponible
+                  para ofrecer con este
+                  PID.
                 </p>
               ) : null}
             </article>
