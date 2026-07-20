@@ -17,6 +17,27 @@ type InterestSummary = {
   status: string;
 };
 
+type MatchRecord = {
+  my_post_id: string;
+  my_description: string;
+  my_pid: string;
+  my_school: string;
+  my_district: string;
+  my_schedule: Puesto["schedule"];
+
+  other_post_id: string;
+  other_description: string;
+  other_pid: string;
+  other_school: string;
+  other_district: string;
+  other_schedule: Puesto["schedule"];
+
+  other_full_name: string;
+  other_phone: string;
+  other_email: string;
+  matched_at: string;
+};
+
 export default async function PanelPage() {
   const supabase = createSupabaseServerClient();
 
@@ -76,6 +97,16 @@ export default async function PanelPage() {
 
   const activeInterests = (interests ?? []) as InterestSummary[];
 
+  const { data: matchesData, error: matchesError } = await supabase.rpc(
+    "get_my_matches"
+  );
+
+  if (matchesError) {
+    console.error("No se pudieron cargar los matches:", matchesError.message);
+  }
+
+  const matches = (matchesData ?? []) as MatchRecord[];
+
   const preferred = safeProfile.preferred_districts ?? [];
 
   const preferredOffers = offered.filter((item) =>
@@ -94,6 +125,7 @@ export default async function PanelPage() {
         <aside className="sidebar">
           <section className="card">
             <h3>Tu perfil de búsqueda</h3>
+
             <PreferredDistrictsForm initialDistricts={preferred} />
           </section>
 
@@ -128,8 +160,15 @@ export default async function PanelPage() {
                 <strong>{preferredOffers.length}</strong>
                 <span>En distritos preferidos</span>
               </div>
+
+              <div className="stat">
+                <strong>{matches.length}</strong>
+                <span>Matches</span>
+              </div>
             </div>
           </section>
+
+          <MatchSection matches={matches} />
 
           <PuestoManager initialPuestos={myPuestos} />
 
@@ -171,6 +210,141 @@ export default async function PanelPage() {
   );
 }
 
+function MatchSection({ matches }: { matches: MatchRecord[] }) {
+  if (matches.length === 0) {
+    return (
+      <section className="card">
+        <span className="eyebrow">Matches</span>
+
+        <h2>Tus coincidencias</h2>
+
+        <div className="empty">
+          Todavía no tenés matches. Los datos de contacto se compartirán cuando
+          ambos docentes manifiesten interés.
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="card">
+      <span className="eyebrow">Matches</span>
+
+      <h2>¡Hay interés recíproco!</h2>
+
+      <p className="help">
+        Ambos docentes eligieron avanzar. Ya pueden comunicarse para conversar
+        sobre la posible permuta.
+      </p>
+
+      <div className="job-list" style={{ marginTop: 20 }}>
+        {matches.map((match) => (
+          <article
+            className="job-item"
+            key={`${match.my_post_id}-${match.other_post_id}`}
+          >
+            <div className="job-item-top">
+              <div>
+                <span className="badge badge-preferred">
+                  ¡Hay match!
+                </span>
+
+                <h3 className="job-title" style={{ marginTop: 10 }}>
+                  {match.other_full_name}
+                </h3>
+
+                <p className="job-sub">
+                  Match por el código PID {match.other_pid}
+                </p>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 18 }}>
+              <h3>Vos ofrecés</h3>
+
+              <p>
+                <strong>{match.my_description}</strong>
+              </p>
+
+              <p className="job-sub">
+                {match.my_school} · {match.my_district}
+              </p>
+
+              <div style={{ marginTop: 8 }}>
+                {match.my_schedule.map((item, index) => (
+                  <span
+                    className="schedule-chip"
+                    key={`my-${match.my_post_id}-${index}`}
+                  >
+                    {item.day}: {item.from}–{item.to}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginTop: 18 }}>
+              <h3>Recibirías</h3>
+
+              <p>
+                <strong>{match.other_description}</strong>
+              </p>
+
+              <p className="job-sub">
+                {match.other_school} · {match.other_district}
+              </p>
+
+              <div style={{ marginTop: 8 }}>
+                {match.other_schedule.map((item, index) => (
+                  <span
+                    className="schedule-chip"
+                    key={`other-${match.other_post_id}-${index}`}
+                  >
+                    {item.day}: {item.from}–{item.to}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginTop: 20 }}>
+              <h3>Datos de contacto</h3>
+
+              <p>
+                <strong>Celular:</strong>{" "}
+                <a href={`tel:${match.other_phone}`}>
+                  {match.other_phone}
+                </a>
+              </p>
+
+              <p>
+                <strong>Correo:</strong>{" "}
+                <a href={`mailto:${match.other_email}`}>
+                  {match.other_email}
+                </a>
+              </p>
+            </div>
+
+            <div className="hero-actions">
+              <a
+                className="btn btn-ghost"
+                href={`tel:${match.other_phone}`}
+              >
+                Llamar
+              </a>
+
+              <a
+                className="btn btn-accent"
+                href={`mailto:${match.other_email}`}
+              >
+                Enviar correo
+              </a>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function OfferSection({
   title,
   offers,
@@ -194,26 +368,33 @@ function OfferSection({
         {offers.map((offer) => {
           const compatibleOwnPosts = myPuestos.filter(
             (puesto) =>
-              puesto.pid === offer.pid && puesto.status === "published"
+              puesto.pid === offer.pid &&
+              puesto.status === "published"
           );
 
           const existingInterest = activeInterests.find(
-            (interest) => interest.target_post_id === offer.id
+            (interest) =>
+              interest.target_post_id === offer.id
           );
 
           return (
             <article className="job-item" key={offer.id}>
               <div className="job-item-top">
                 <div>
-                  <h3 className="job-title">{offer.description}</h3>
+                  <h3 className="job-title">
+                    {offer.description}
+                  </h3>
 
                   <p className="job-sub">
-                    PID {offer.pid} · {offer.school} · {offer.district}
+                    PID {offer.pid} · {offer.school} ·{" "}
+                    {offer.district}
                   </p>
                 </div>
 
                 {preferred ? (
-                  <span className="badge badge-preferred">Preferido</span>
+                  <span className="badge badge-preferred">
+                    Preferido
+                  </span>
                 ) : null}
               </div>
 
@@ -262,12 +443,21 @@ function OfferSection({
                           Elegí cuál de tus puestos ofrecés
                         </span>
 
-                        <select name="offered_post_id" required>
-                          <option value="">Seleccionar puesto</option>
+                        <select
+                          name="offered_post_id"
+                          required
+                        >
+                          <option value="">
+                            Seleccionar puesto
+                          </option>
 
                           {compatibleOwnPosts.map((puesto) => (
-                            <option key={puesto.id} value={puesto.id}>
-                              {puesto.description} · {puesto.school}
+                            <option
+                              key={puesto.id}
+                              value={puesto.id}
+                            >
+                              {puesto.description} ·{" "}
+                              {puesto.school}
                             </option>
                           ))}
                         </select>
@@ -277,7 +467,9 @@ function OfferSection({
                     <button
                       className="btn btn-accent"
                       type="submit"
-                      disabled={compatibleOwnPosts.length === 0}
+                      disabled={
+                        compatibleOwnPosts.length === 0
+                      }
                     >
                       Me interesa
                     </button>
@@ -287,8 +479,8 @@ function OfferSection({
 
               {compatibleOwnPosts.length === 0 ? (
                 <p className="help">
-                  No tenés un puesto publicado disponible para ofrecer con este
-                  PID.
+                  No tenés un puesto publicado disponible para
+                  ofrecer con este PID.
                 </p>
               ) : null}
             </article>
