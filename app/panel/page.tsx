@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { PanelHeader } from "@/components/PanelHeader";
 import { PreferredDistrictsForm } from "@/components/PreferredDistrictsForm";
 import { PuestoManager } from "@/components/PuestoManager";
+import { CopyMatchSummaryButton } from "@/components/CopyMatchSummaryButton";
 import type { Puesto } from "@/lib/types";
 import {
   createInterest,
@@ -302,6 +303,17 @@ export default async function PanelPage() {
   );
 }
 
+function formatSchedule(
+  schedule: Puesto["schedule"]
+) {
+  return schedule
+    .map(
+      (item) =>
+        `${item.day} de ${item.from} a ${item.to}`
+    )
+    .join(", ");
+}
+
 function MatchSection({
   matches,
 }: {
@@ -347,140 +359,192 @@ function MatchSection({
         className="job-list"
         style={{ marginTop: 20 }}
       >
-        {matches.map((match) => (
-          <article
-            className="job-item"
-            key={`${match.my_post_id}-${match.other_post_id}`}
-          >
-            <div className="job-item-top">
-              <div>
-                <span className="badge badge-preferred">
-                  ¡Hay match!
-                </span>
+        {matches.map((match) => {
+          const summary = [
+            "RESUMEN DE POSIBLE PERMUTA",
+            "Docentes Brown",
+            "",
+            `Código PID: ${match.my_pid}`,
+            "",
+            "PUESTO QUE OFREZCO",
+            `Descripción: ${match.my_description}`,
+            `Institución: ${match.my_school}`,
+            `Distrito: ${match.my_district}`,
+            `Días y horarios: ${formatSchedule(
+              match.my_schedule
+            )}`,
+            "",
+            "PUESTO QUE RECIBIRÍA",
+            `Descripción: ${match.other_description}`,
+            `Institución: ${match.other_school}`,
+            `Distrito: ${match.other_district}`,
+            `Días y horarios: ${formatSchedule(
+              match.other_schedule
+            )}`,
+            "",
+            "CONTACTO DEL OTRO DOCENTE",
+            `Nombre: ${match.other_full_name}`,
+            `Celular: ${match.other_phone}`,
+            `Correo: ${match.other_email}`,
+            "",
+            "Este resumen corresponde a una coincidencia generada en la aplicación de Permutas Docentes de Docentes Brown.",
+          ].join("\n");
 
-                <h3
-                  className="job-title"
-                  style={{ marginTop: 10 }}
-                >
-                  {match.other_full_name}
-                </h3>
+          return (
+            <article
+              className="job-item"
+              key={`${match.my_post_id}-${match.other_post_id}`}
+            >
+              <div className="job-item-top">
+                <div>
+                  <span className="badge badge-preferred">
+                    ¡Hay match!
+                  </span>
+
+                  <h3
+                    className="job-title"
+                    style={{
+                      marginTop: 10,
+                    }}
+                  >
+                    {match.other_full_name}
+                  </h3>
+
+                  <p className="job-sub">
+                    Match por el código PID{" "}
+                    {match.other_pid}
+                  </p>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  marginTop: 18,
+                }}
+              >
+                <h3>Vos ofrecés</h3>
+
+                <p>
+                  <strong>
+                    {match.my_description}
+                  </strong>
+                </p>
 
                 <p className="job-sub">
-                  Match por el código PID{" "}
-                  {match.other_pid}
+                  {match.my_school} ·{" "}
+                  {match.my_district}
+                </p>
+
+                <div
+                  style={{
+                    marginTop: 8,
+                  }}
+                >
+                  {match.my_schedule.map(
+                    (item, index) => (
+                      <span
+                        className="schedule-chip"
+                        key={`my-${match.my_post_id}-${index}`}
+                      >
+                        {item.day}:{" "}
+                        {item.from}–{item.to}
+                      </span>
+                    )
+                  )}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  marginTop: 18,
+                }}
+              >
+                <h3>Recibirías</h3>
+
+                <p>
+                  <strong>
+                    {match.other_description}
+                  </strong>
+                </p>
+
+                <p className="job-sub">
+                  {match.other_school} ·{" "}
+                  {match.other_district}
+                </p>
+
+                <div
+                  style={{
+                    marginTop: 8,
+                  }}
+                >
+                  {match.other_schedule.map(
+                    (item, index) => (
+                      <span
+                        className="schedule-chip"
+                        key={`other-${match.other_post_id}-${index}`}
+                      >
+                        {item.day}:{" "}
+                        {item.from}–{item.to}
+                      </span>
+                    )
+                  )}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  marginTop: 20,
+                }}
+              >
+                <h3>
+                  Datos de contacto
+                </h3>
+
+                <p>
+                  <strong>
+                    Celular:
+                  </strong>{" "}
+                  <a
+                    href={`tel:${match.other_phone}`}
+                  >
+                    {match.other_phone}
+                  </a>
+                </p>
+
+                <p>
+                  <strong>
+                    Correo:
+                  </strong>{" "}
+                  <a
+                    href={`mailto:${match.other_email}`}
+                  >
+                    {match.other_email}
+                  </a>
                 </p>
               </div>
-            </div>
 
-            <div
-              style={{ marginTop: 18 }}
-            >
-              <h3>Vos ofrecés</h3>
-
-              <p>
-                <strong>
-                  {match.my_description}
-                </strong>
-              </p>
-
-              <p className="job-sub">
-                {match.my_school} ·{" "}
-                {match.my_district}
-              </p>
-
-              <div
-                style={{ marginTop: 8 }}
-              >
-                {match.my_schedule.map(
-                  (item, index) => (
-                    <span
-                      className="schedule-chip"
-                      key={`my-${match.my_post_id}-${index}`}
-                    >
-                      {item.day}:{" "}
-                      {item.from}–{item.to}
-                    </span>
-                  )
-                )}
-              </div>
-            </div>
-
-            <div
-              style={{ marginTop: 18 }}
-            >
-              <h3>Recibirías</h3>
-
-              <p>
-                <strong>
-                  {match.other_description}
-                </strong>
-              </p>
-
-              <p className="job-sub">
-                {match.other_school} ·{" "}
-                {match.other_district}
-              </p>
-
-              <div
-                style={{ marginTop: 8 }}
-              >
-                {match.other_schedule.map(
-                  (item, index) => (
-                    <span
-                      className="schedule-chip"
-                      key={`other-${match.other_post_id}-${index}`}
-                    >
-                      {item.day}:{" "}
-                      {item.from}–{item.to}
-                    </span>
-                  )
-                )}
-              </div>
-            </div>
-
-            <div
-              style={{ marginTop: 20 }}
-            >
-              <h3>
-                Datos de contacto
-              </h3>
-
-              <p>
-                <strong>Celular:</strong>{" "}
+              <div className="hero-actions">
                 <a
+                  className="btn btn-ghost"
                   href={`tel:${match.other_phone}`}
                 >
-                  {match.other_phone}
+                  Llamar
                 </a>
-              </p>
 
-              <p>
-                <strong>Correo:</strong>{" "}
                 <a
+                  className="btn btn-ghost"
                   href={`mailto:${match.other_email}`}
                 >
-                  {match.other_email}
+                  Enviar correo
                 </a>
-              </p>
-            </div>
 
-            <div className="hero-actions">
-              <a
-                className="btn btn-ghost"
-                href={`tel:${match.other_phone}`}
-              >
-                Llamar
-              </a>
-
-              <a
-                className="btn btn-accent"
-                href={`mailto:${match.other_email}`}
-              >
-                Enviar correo
-              </a>
-            </div>
-          </article>
-        ))}
+                <CopyMatchSummaryButton
+                  summary={summary}
+                />
+              </div>
+            </article>
+          );
+        })}
       </div>
     </section>
   );
@@ -550,7 +614,9 @@ function OfferSection({
               </div>
 
               <div
-                style={{ marginTop: 12 }}
+                style={{
+                  marginTop: 12,
+                }}
               >
                 {offer.schedule.map(
                   (item, index) => (
