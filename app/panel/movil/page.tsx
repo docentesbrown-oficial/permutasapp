@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { MobileOffersDeck } from "@/components/MobileOffersDeck";
@@ -151,17 +152,62 @@ export default async function MobilePanelPage() {
     : 0;
 
   return (
-    <MobileOffersDeck
-      fullName={profile.full_name}
-      preferredOffers={
-        preferredOffers
-      }
-      otherOffers={otherOffers}
-      myPuestos={myPuestos}
-      activeTargetPostIds={
-        activeTargetPostIds
-      }
-      matchesCount={matchesCount}
-    />
+    <>
+      <div className="mobile-new-course-bar">
+        <Link href="/panel/movil/nuevo">
+          <span>＋</span>
+          Ofrecer nuevo curso
+        </Link>
+      </div>
+
+      <MobileOffersDeck
+        fullName={profile.full_name}
+        preferredOffers={
+          preferredOffers
+        }
+        otherOffers={otherOffers}
+        myPuestos={myPuestos}
+        activeTargetPostIds={
+          activeTargetPostIds
+        }
+        matchesCount={matchesCount}
+      />
+
+      <style>{`
+        .mobile-new-course-bar {
+          position: sticky;
+          top: 0;
+          z-index: 100;
+          padding: 10px 16px;
+          background: #24496e;
+          box-shadow:
+            0 7px 20px
+            rgba(36, 73, 110, 0.18);
+        }
+
+        .mobile-new-course-bar a {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          width: 100%;
+          max-width: 520px;
+          min-height: 43px;
+          margin: 0 auto;
+          border-radius: 13px;
+          background: #f3efdc;
+          color: #24496e;
+          font-size: 14px;
+          font-weight: 900;
+          text-decoration: none;
+        }
+
+        .mobile-new-course-bar span {
+          color: #da6863;
+          font-size: 21px;
+          line-height: 1;
+        }
+      `}</style>
+    </>
   );
 }
