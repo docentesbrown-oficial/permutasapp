@@ -3,10 +3,27 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { sendMatchEmail } from "@/lib/mailer";
 
 type MatchLookup = {
   my_post_id: string;
+  my_description: string;
+  my_pid: string;
+  my_school: string;
+  my_district: string;
+
   other_post_id: string;
+  other_description: string;
+  other_pid: string;
+  other_school: string;
+  other_district: string;
+
+  other_full_name: string;
+  other_email: string;
+};
+
+type OwnProfile = {
+  full_name: string;
 };
 
 export async function createInterest(
@@ -93,6 +110,108 @@ export async function createInterest(
     ]
       .sort()
       .join("--");
+
+    const {
+      data: ownProfileData,
+      error: ownProfileError,
+    } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .single();
+
+    if (ownProfileError) {
+      console.error(
+        "No se pudo cargar el perfil para el correo:",
+        ownProfileError.message
+      );
+    }
+
+    const ownProfile =
+      ownProfileData as OwnProfile | null;
+
+    const ownName =
+      ownProfile?.full_name ??
+      user.email ??
+      "Docente";
+
+    const emailTasks: Promise<void>[] = [];
+
+    if (user.email) {
+      emailTasks.push(
+        sendMatchEmail({
+          to: user.email,
+          recipientName: ownName,
+          otherTeacherName:
+            newMatch.other_full_name,
+          pid: newMatch.my_pid,
+          ownPost: {
+            description:
+              newMatch.my_description,
+            school:
+              newMatch.my_school,
+            district:
+              newMatch.my_district,
+          },
+          otherPost: {
+            description:
+              newMatch.other_description,
+            school:
+              newMatch.other_school,
+            district:
+              newMatch.other_district,
+          },
+          matchKey,
+        })
+      );
+    }
+
+    if (newMatch.other_email) {
+      emailTasks.push(
+        sendMatchEmail({
+          to: newMatch.other_email,
+          recipientName:
+            newMatch.other_full_name,
+          otherTeacherName: ownName,
+          pid: newMatch.other_pid,
+          ownPost: {
+            description:
+              newMatch.other_description,
+            school:
+              newMatch.other_school,
+            district:
+              newMatch.other_district,
+          },
+          otherPost: {
+            description:
+              newMatch.my_description,
+            school:
+              newMatch.my_school,
+            district:
+              newMatch.my_district,
+          },
+          matchKey,
+        })
+      );
+    }
+
+    const emailResults =
+      await Promise.allSettled(
+        emailTasks
+      );
+
+    emailResults.forEach(
+      (result, index) => {
+        if (
+          result.status === "rejected"
+        ) {
+          console.error(
+            `No se pudo enviar el correo ${index + 1}:`,
+            result.reason
+          );
+        }
+      }
+    );
 
     redirect(
       `/panel?match=${encodeURIComponent(
