@@ -13,6 +13,10 @@ export function MobilePanelRedirect() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    window.sessionStorage.removeItem(
+      "permutas-desktop-view"
+    );
+
     if (pathname !== "/panel") {
       return;
     }
@@ -22,20 +26,6 @@ export function MobilePanelRedirect() {
       "escritorio";
 
     if (desktopRequested) {
-      window.sessionStorage.setItem(
-        "permutas-desktop-view",
-        "true"
-      );
-
-      return;
-    }
-
-    const desktopViewSaved =
-      window.sessionStorage.getItem(
-        "permutas-desktop-view"
-      ) === "true";
-
-    if (desktopViewSaved) {
       return;
     }
 
