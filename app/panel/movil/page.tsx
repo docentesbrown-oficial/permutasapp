@@ -2,11 +2,17 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { MobileOffersDeck } from "@/components/MobileOffersDeck";
+import { MobileOffersEmptyState } from "@/components/MobileOffersEmptyState";
 import type { Puesto } from "@/lib/types";
 
 type Profile = {
   full_name: string;
   preferred_districts: string[] | null;
+};
+
+type InterestRecord = {
+  target_post_id: string;
+  status: string;
 };
 
 export default async function MobilePanelPage() {
@@ -48,12 +54,13 @@ export default async function MobilePanelPage() {
 
     supabase
       .from("interests")
-      .select("target_post_id")
+      .select(
+        "target_post_id, status"
+      )
       .eq(
         "requester_user_id",
         user.id
-      )
-      .eq("status", "active"),
+      ),
 
     supabase
       .from("dismissed_offers")
@@ -74,57 +81,89 @@ export default async function MobilePanelPage() {
   const myPuestos =
     (puestosData ?? []) as Puesto[];
 
+  const publishedOwnPosts =
+    myPuestos.filter(
+      (puesto) =>
+        puesto.status === "published"
+    );
+
   const publishedPids = [
     ...new Set(
-      myPuestos
-        .filter(
-          (puesto) =>
-            puesto.status ===
-            "published"
-        )
-        .map(
-          (puesto) => puesto.pid
-        )
+      publishedOwnPosts.map(
+        (puesto) => puesto.pid
+      )
     ),
   ];
 
-  let offers: Puesto[] = [];
+  if (publishedPids.length === 0) {
+    return (
+      <>
+        <MobileTopBar />
 
-  if (publishedPids.length > 0) {
-    const { data: offersData } =
-      await supabase
-        .from("puestos")
-        .select(
-          "id, description, pid, school, district, schedule, status, created_at"
-        )
-        .in("pid", publishedPids)
-        .neq("user_id", user.id)
-        .eq("status", "published")
-        .order("created_at", {
-          ascending: false,
-        });
-
-    offers =
-      (offersData ?? []) as Puesto[];
+        <MobileOffersEmptyState
+          type="no-own-posts"
+        />
+      </>
+    );
   }
 
-  const dismissedIds = new Set(
-    (dismissedData ?? []).map(
-      (item) => item.target_post_id
-    )
-  );
+  let offers: Puesto[] = [];
 
-  const visibleOffers =
+  const { data: offersData } =
+    await supabase
+      .from("puestos")
+      .select(
+        "id, description, pid, school, district, schedule, status, created_at"
+      )
+      .in("pid", publishedPids)
+      .neq("user_id", user.id)
+      .eq("status", "published")
+      .order("created_at", {
+        ascending: false,
+      });
+
+  offers =
+    (offersData ?? []) as Puesto[];
+
+  const interests =
+    (interestsData ??
+      []) as InterestRecord[];
+
+  const alreadyReviewedIds = new Set([
+    ...interests.map(
+      (interest) =>
+        interest.target_post_id
+    ),
+    ...(dismissedData ?? []).map(
+      (item) => item.target_post_id
+    ),
+  ]);
+
+  const newOffers =
     offers.filter(
       (offer) =>
-        !dismissedIds.has(offer.id)
+        !alreadyReviewedIds.has(
+          offer.id
+        )
     );
+
+  if (newOffers.length === 0) {
+    return (
+      <>
+        <MobileTopBar />
+
+        <MobileOffersEmptyState
+          type="no-new-offers"
+        />
+      </>
+    );
+  }
 
   const preferredDistricts =
     profile.preferred_districts ?? [];
 
   const preferredOffers =
-    visibleOffers.filter(
+    newOffers.filter(
       (offer) =>
         preferredDistricts.includes(
           offer.district
@@ -132,17 +171,11 @@ export default async function MobilePanelPage() {
     );
 
   const otherOffers =
-    visibleOffers.filter(
+    newOffers.filter(
       (offer) =>
         !preferredDistricts.includes(
           offer.district
         )
-    );
-
-  const activeTargetPostIds =
-    (interestsData ?? []).map(
-      (interest) =>
-        interest.target_post_id
     );
 
   const matchesCount = Array.isArray(
@@ -153,12 +186,7 @@ export default async function MobilePanelPage() {
 
   return (
     <>
-      <div className="mobile-new-course-bar">
-        <Link href="/panel/movil/nuevo">
-          <span>＋</span>
-          Ofrecer nuevo curso
-        </Link>
-      </div>
+      <MobileTopBar />
 
       <MobileOffersDeck
         fullName={profile.full_name}
@@ -166,12 +194,23 @@ export default async function MobilePanelPage() {
           preferredOffers
         }
         otherOffers={otherOffers}
-        myPuestos={myPuestos}
-        activeTargetPostIds={
-          activeTargetPostIds
-        }
+        myPuestos={publishedOwnPosts}
+        activeTargetPostIds={[]}
         matchesCount={matchesCount}
       />
+    </>
+  );
+}
+
+function MobileTopBar() {
+  return (
+    <>
+      <div className="mobile-new-course-bar">
+        <Link href="/panel/movil/nuevo">
+          <span>＋</span>
+          Ofrecer nuevo curso
+        </Link>
+      </div>
 
       <style>{`
         .mobile-new-course-bar {
