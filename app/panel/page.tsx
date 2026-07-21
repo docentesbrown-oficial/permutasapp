@@ -218,6 +218,10 @@ export default async function PanelPage() {
             />
           </section>
 
+          <MatchSidebarSummary
+            matches={matches}
+          />
+
           <section className="card">
             <h3>
               Cómo se ordenan
@@ -247,9 +251,7 @@ export default async function PanelPage() {
             <div className="stat-row">
               <div className="stat">
                 <strong>
-                  {
-                    myPuestos.length
-                  }
+                  {myPuestos.length}
                 </strong>
 
                 <span>
@@ -259,22 +261,18 @@ export default async function PanelPage() {
 
               <div className="stat">
                 <strong>
-                  {
-                    visibleOffers.length
-                  }
+                  {visibleOffers.length}
                 </strong>
 
                 <span>
-                  Ofrecimientos con
-                  tus PID
+                  Ofrecimientos con tus
+                  PID
                 </span>
               </div>
 
               <div className="stat">
                 <strong>
-                  {
-                    preferredOffers.length
-                  }
+                  {preferredOffers.length}
                 </strong>
 
                 <span>
@@ -282,22 +280,8 @@ export default async function PanelPage() {
                   preferidos
                 </span>
               </div>
-
-              <div className="stat">
-                <strong>
-                  {matches.length}
-                </strong>
-
-                <span>
-                  Matches
-                </span>
-              </div>
             </div>
           </section>
-
-          <MatchSection
-            matches={matches}
-          />
 
           <PuestoManager
             initialPuestos={
@@ -356,9 +340,142 @@ export default async function PanelPage() {
               </>
             )}
           </section>
+
+          <MatchSection
+            matches={matches}
+          />
         </div>
       </main>
     </>
+  );
+}
+
+function MatchSidebarSummary({
+  matches,
+}: {
+  matches: MatchRecord[];
+}) {
+  return (
+    <section className="card">
+      <span className="eyebrow">
+        Coincidencias
+      </span>
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 14,
+          marginTop: 10,
+        }}
+      >
+        <strong
+          style={{
+            fontSize: 42,
+            lineHeight: 1,
+            color: "#24496e",
+          }}
+        >
+          {matches.length}
+        </strong>
+
+        <div>
+          <h3
+            style={{
+              margin: 0,
+            }}
+          >
+            {matches.length === 1
+              ? "Match activo"
+              : "Matches activos"}
+          </h3>
+
+          <p
+            className="help"
+            style={{
+              marginTop: 4,
+            }}
+          >
+            Con interés recíproco
+          </p>
+        </div>
+      </div>
+
+      {matches.length === 0 ? (
+        <p
+          className="help"
+          style={{
+            marginTop: 16,
+          }}
+        >
+          Cuando ambos docentes
+          manifiesten interés, la
+          coincidencia aparecerá acá.
+        </p>
+      ) : (
+        <div
+          style={{
+            marginTop: 18,
+            display: "grid",
+            gap: 12,
+          }}
+        >
+          {matches
+            .slice(0, 3)
+            .map((match) => (
+              <div
+                key={`${match.my_post_id}-${match.other_post_id}`}
+                style={{
+                  padding: 12,
+                  borderRadius: 12,
+                  background:
+                    "rgba(36, 73, 110, 0.08)",
+                }}
+              >
+                <strong>
+                  {
+                    match.other_full_name
+                  }
+                </strong>
+
+                <p
+                  className="help"
+                  style={{
+                    marginTop: 4,
+                    marginBottom: 0,
+                  }}
+                >
+                  PID {match.other_pid}
+                  <br />
+                  {
+                    match.other_district
+                  }
+                </p>
+              </div>
+            ))}
+
+          {matches.length > 3 ? (
+            <p className="help">
+              Y{" "}
+              {matches.length - 3}{" "}
+              coincidencia
+              {matches.length - 3 ===
+              1
+                ? ""
+                : "s"}{" "}
+              más.
+            </p>
+          ) : null}
+
+          <a
+            className="btn btn-accent"
+            href="#coincidencias"
+          >
+            Ver coincidencias
+          </a>
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -380,9 +497,12 @@ function MatchSection({
 }) {
   if (matches.length === 0) {
     return (
-      <section className="card">
+      <section
+        className="card"
+        id="coincidencias"
+      >
         <span className="eyebrow">
-          Matches
+          Coincidencias
         </span>
 
         <h2>
@@ -401,9 +521,12 @@ function MatchSection({
   }
 
   return (
-    <section className="card">
+    <section
+      className="card"
+      id="coincidencias"
+    >
       <span className="eyebrow">
-        Matches
+        Coincidencias
       </span>
 
       <h2>
@@ -425,7 +548,7 @@ function MatchSection({
         }}
       >
         {matches.map((match) => {
-          const summary = [
+          const whatsappMessage = [
             "¡Hola! Nos conectamos mediante Permutas Docentes de Docentes Brown.",
             "",
             "Tenemos una coincidencia para una posible permuta.",
@@ -505,9 +628,7 @@ function MatchSection({
                   <p className="job-sub">
                     Match por el código
                     PID{" "}
-                    {
-                      match.other_pid
-                    }
+                    {match.other_pid}
                   </p>
                 </div>
               </div>
@@ -623,7 +744,9 @@ function MatchSection({
                   phone={
                     match.other_phone
                   }
-                  message={summary}
+                  message={
+                    whatsappMessage
+                  }
                 />
 
                 <CopyMatchSummaryButton
