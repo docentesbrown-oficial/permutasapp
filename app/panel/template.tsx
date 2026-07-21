@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Suspense } from "react";
 import { MatchCelebrationModal } from "@/components/MatchCelebrationModal";
+import { MobilePanelRedirect } from "@/components/MobilePanelRedirect";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 type MatchRecord = {
@@ -64,6 +65,8 @@ export default async function PanelTemplate({
   return (
     <>
       <Suspense fallback={null}>
+        <MobilePanelRedirect />
+
         <MatchCelebrationModal
           matches={modalMatches}
         />
