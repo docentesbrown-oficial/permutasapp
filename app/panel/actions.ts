@@ -4,8 +4,16 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-export async function createInterest(formData: FormData) {
-  const supabase = createSupabaseServerClient();
+type MatchLookup = {
+  my_post_id: string;
+  other_post_id: string;
+};
+
+export async function createInterest(
+  formData: FormData
+) {
+  const supabase =
+    createSupabaseServerClient();
 
   const {
     data: { user },
@@ -27,17 +35,20 @@ export async function createInterest(formData: FormData) {
     return;
   }
 
-  const { error } = await supabase.from("interests").upsert(
-    {
-      requester_user_id: user.id,
-      offered_post_id: offeredPostId,
-      target_post_id: targetPostId,
-      status: "active",
-    },
-    {
-      onConflict: "offered_post_id,target_post_id",
-    }
-  );
+  const { error } = await supabase
+    .from("interests")
+    .upsert(
+      {
+        requester_user_id: user.id,
+        offered_post_id: offeredPostId,
+        target_post_id: targetPostId,
+        status: "active",
+      },
+      {
+        onConflict:
+          "offered_post_id,target_post_id",
+      }
+    );
 
   if (error) {
     console.error(
@@ -48,11 +59,54 @@ export async function createInterest(formData: FormData) {
     return;
   }
 
+  const {
+    data: matchesData,
+    error: matchesError,
+  } = await supabase.rpc(
+    "get_my_matches"
+  );
+
+  if (matchesError) {
+    console.error(
+      "No se pudo comprobar el match:",
+      matchesError.message
+    );
+  }
+
+  const matches =
+    (matchesData ?? []) as MatchLookup[];
+
+  const newMatch = matches.find(
+    (match) =>
+      match.my_post_id ===
+        offeredPostId &&
+      match.other_post_id ===
+        targetPostId
+  );
+
   revalidatePath("/panel");
+
+  if (newMatch) {
+    const matchKey = [
+      newMatch.my_post_id,
+      newMatch.other_post_id,
+    ]
+      .sort()
+      .join("--");
+
+    redirect(
+      `/panel?match=${encodeURIComponent(
+        matchKey
+      )}`
+    );
+  }
 }
 
-export async function withdrawInterest(formData: FormData) {
-  const supabase = createSupabaseServerClient();
+export async function withdrawInterest(
+  formData: FormData
+) {
+  const supabase =
+    createSupabaseServerClient();
 
   const {
     data: { user },
@@ -79,9 +133,18 @@ export async function withdrawInterest(formData: FormData) {
     .update({
       status: "withdrawn",
     })
-    .eq("requester_user_id", user.id)
-    .eq("offered_post_id", offeredPostId)
-    .eq("target_post_id", targetPostId);
+    .eq(
+      "requester_user_id",
+      user.id
+    )
+    .eq(
+      "offered_post_id",
+      offeredPostId
+    )
+    .eq(
+      "target_post_id",
+      targetPostId
+    );
 
   if (error) {
     console.error(
@@ -95,8 +158,11 @@ export async function withdrawInterest(formData: FormData) {
   revalidatePath("/panel");
 }
 
-export async function dismissOffer(formData: FormData) {
-  const supabase = createSupabaseServerClient();
+export async function dismissOffer(
+  formData: FormData
+) {
+  const supabase =
+    createSupabaseServerClient();
 
   const {
     data: { user },
@@ -119,10 +185,12 @@ export async function dismissOffer(formData: FormData) {
     .upsert(
       {
         user_id: user.id,
-        target_post_id: targetPostId,
+        target_post_id:
+          targetPostId,
       },
       {
-        onConflict: "user_id,target_post_id",
+        onConflict:
+          "user_id,target_post_id",
       }
     );
 
